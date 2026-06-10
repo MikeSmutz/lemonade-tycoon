@@ -106,78 +106,120 @@
   <div class="toast" id="toast">Saved</div>
 
 <script>
-const VERSION = 2;
+const VERSION = 3;
 const businessDefaults = [
-  {id:'stand', name:'Lemonade Stand', icon:'🍋', baseCost:10, baseIncome:0.45, growth:1.13, duration:1.2, level:0, flavor:'Street corner classic'},
-  {id:'cart', name:'Food Cart', icon:'🌭', baseCost:85, baseIncome:3.2, growth:1.145, duration:1.5, level:0, flavor:'Snacks bring bigger crowds'},
-  {id:'truck', name:'Food Truck', icon:'🚚', baseCost:620, baseIncome:18, growth:1.155, duration:1.8, level:0, flavor:'Mobile lemonade delivery'},
-  {id:'cafe', name:'Corner Cafe', icon:'☕', baseCost:4200, baseIncome:105, growth:1.165, duration:2.1, level:0, flavor:'Upscale drinks, better tips'},
-  {id:'diner', name:'Retro Diner', icon:'🍔', baseCost:29000, baseIncome:620, growth:1.175, duration:2.4, level:0, flavor:'Families love combos'},
-  {id:'bbq', name:'BBQ Pit', icon:'🍖', baseCost:210000, baseIncome:3800, growth:1.185, duration:2.7, level:0, flavor:'Sweet tea margins explode'},
-  {id:'bistro', name:'French Bistro', icon:'🥐', baseCost:1500000, baseIncome:24000, growth:1.195, duration:3.0, level:0, flavor:'Premium tourists'},
-  {id:'steak', name:'Steakhouse', icon:'🥩', baseCost:12000000, baseIncome:160000, growth:1.205, duration:3.3, level:0, flavor:'Big spenders, big tickets'}
+  {id:'stand', name:'Lemonade Stand', icon:'🍋', baseCost:8, baseIncome:1.5, growth:1.12, duration:1.0, level:0, flavor:'Your first money printer'},
+  {id:'cart', name:'Snack Cart', icon:'🌭', baseCost:55, baseIncome:8, growth:1.13, duration:1.2, level:0, flavor:'Turns foot traffic into cash'},
+  {id:'truck', name:'Food Truck', icon:'🚚', baseCost:280, baseIncome:42, growth:1.14, duration:1.4, level:0, flavor:'Mobile orders, bigger rushes'},
+  {id:'cafe', name:'Corner Cafe', icon:'☕', baseCost:1500, baseIncome:210, growth:1.15, duration:1.6, level:0, flavor:'Better margins and tips'},
+  {id:'diner', name:'Retro Diner', icon:'🍔', baseCost:9000, baseIncome:1150, growth:1.16, duration:1.8, level:0, flavor:'Families buy combos'},
+  {id:'bbq', name:'BBQ Pit', icon:'🍖', baseCost:52000, baseIncome:6500, growth:1.17, duration:2.0, level:0, flavor:'Lines around the block'},
+  {id:'bistro', name:'French Bistro', icon:'🥐', baseCost:310000, baseIncome:38000, growth:1.18, duration:2.2, level:0, flavor:'Tourists pay premium'},
+  {id:'steak', name:'Steakhouse', icon:'🥩', baseCost:1900000, baseIncome:240000, growth:1.19, duration:2.4, level:0, flavor:'Whales with dinner reservations'}
 ];
 let businesses = JSON.parse(JSON.stringify(businessDefaults));
 let state = {
-  version:VERSION, cash:0, gems:0, rep:0, totalEarned:0, lifetimeEarned:0, taps:0, served:0,
-  boostMult:1, boostUntil:0, adFree:false, prestigeCount:0, lastSave:Date.now(), missionIndex:0,
-  pendingOffline:0, seenTutorial:false
+  version: VERSION, cash:0, gems:0, rep:0, totalEarned:0, lifetimeEarned:0,
+  taps:0, served:0, boostMult:1, boostUntil:0, adFree:false, prestigeCount:0,
+  lastSave:Date.now(), missionIndex:0, pendingOffline:0, seenTutorial:false
 };
 const customers = ['🧑','👩','👨','👵','🧔','👱‍♀️','🧕','👩‍💼','🧑‍🚀'];
 const missions = [
-  {title:'First Sale', sub:'Serve 5 thirsty customers', target:5, stat:'served', reward:{cash:25, rep:2}},
-  {title:'Tiny Tycoon', sub:'Own 3 total business levels', target:3, stat:'levels', reward:{cash:90, rep:5}},
-  {title:'Hundred Dollar Day', sub:'Earn $100 lifetime', target:100, stat:'lifetimeEarned', reward:{cash:125, rep:10}},
-  {title:'Automate the Street', sub:'Own 10 total business levels', target:10, stat:'levels', reward:{cash:600, rep:20}},
-  {title:'Local Favorite', sub:'Serve 50 customers', target:50, stat:'served', reward:{cash:2500, gems:2}},
-  {title:'Millionaire Mix', sub:'Earn $1,000,000 lifetime', target:1000000, stat:'lifetimeEarned', reward:{cash:100000, gems:10}}
+  {title:'First Rush', sub:'Serve 5 thirsty customers', target:5, stat:'served', reward:{cash:35, rep:2}},
+  {title:'Open For Business', sub:'Buy 3 total business levels', target:3, stat:'levels', reward:{cash:120, rep:5}},
+  {title:'Hundred Dollar Day', sub:'Earn $100 lifetime', target:100, stat:'lifetimeEarned', reward:{cash:180, rep:8}},
+  {title:'Automated Street', sub:'Own 10 total business levels', target:10, stat:'levels', reward:{cash:900, rep:15}},
+  {title:'Local Favorite', sub:'Serve 50 customers', target:50, stat:'served', reward:{cash:3500, gems:2}},
+  {title:'Millionaire Mix', sub:'Earn $1,000,000 lifetime', target:1000000, stat:'lifetimeEarned', reward:{cash:125000, gems:10}}
 ];
-function save(){ state.lastSave=Date.now(); localStorage.setItem('lemonade_tycoon_v2', JSON.stringify({state,businesses})); }
+function normalizeBusinesses(){
+  businesses = businessDefaults.map(def => {
+    const old = businesses.find(b => b.id === def.id) || {};
+    return {...def, level: Math.max(0, Number(old.level)||0)};
+  });
+}
+function save(){ state.version=VERSION; state.lastSave=Date.now(); localStorage.setItem('lemonade_tycoon_v3', JSON.stringify({state,businesses})); }
 function load(){
-  const v2 = localStorage.getItem('lemonade_tycoon_v2');
-  if(v2){ try{const data=JSON.parse(v2); Object.assign(state,data.state||{}); (data.businesses||[]).forEach((b,i)=>businesses[i]&&Object.assign(businesses[i],b)); return;}catch(e){} }
-  const old = localStorage.getItem('lt_save');
-  if(old){ try{const data=JSON.parse(old); Object.assign(state,{cash:data.state.cash||0,gems:data.state.gems||0,totalEarned:data.state.totalEarned||0,lifetimeEarned:data.state.totalEarned||0,boostMult:data.state.boostMult||1,boostUntil:data.state.boostUntil||0,adFree:data.state.adFree||false,prestigeCount:data.state.prestigeCount||0,lastSave:data.state.lastSave||Date.now()}); (data.businesses||[]).forEach((b,i)=>businesses[i]&&(businesses[i].level=b.level||0)); state.rep=Math.floor(state.lifetimeEarned/1000); state.version=VERSION; }catch(e){} }
+  const keys=['lemonade_tycoon_v3','lemonade_tycoon_v2','lt_save'];
+  for(const key of keys){
+    const raw=localStorage.getItem(key); if(!raw) continue;
+    try{
+      const data=JSON.parse(raw);
+      if(data.state) Object.assign(state, data.state);
+      if(Array.isArray(data.businesses)){
+        data.businesses.forEach((old,i)=>{ const idx=businesses.findIndex(b=>b.id===old.id); const target = idx>=0 ? businesses[idx] : businesses[i]; if(target) target.level = Math.max(0, Number(old.level)||0); });
+      }
+      break;
+    } catch(e) { console.warn('Save migration failed for', key, e); }
+  }
+  normalizeBusinesses();
+  state.version=VERSION;
+  state.cash=Number(state.cash)||0; state.gems=Number(state.gems)||0; state.rep=Number(state.rep)||0;
+  state.totalEarned=Number(state.totalEarned)||0; state.lifetimeEarned=Number(state.lifetimeEarned)||0;
+  state.served=Number(state.served)||0; state.taps=Number(state.taps)||0; state.missionIndex=Number(state.missionIndex)||0;
 }
 load();
 function fmt(n){
-  n = Math.max(0, Number(n)||0);
-  if(n < 100) return '$' + (n % 1 === 0 ? Math.floor(n).toLocaleString() : n.toFixed(1));
-  if(n < 1000) return '$' + Math.floor(n).toLocaleString();
+  n=Math.max(0,Number(n)||0);
+  if(n<100) return '$'+(n%1===0?Math.floor(n).toLocaleString():n.toFixed(1));
+  if(n<1000) return '$'+Math.floor(n).toLocaleString();
   const s=['K','M','B','T','Qa','Qi','Sx','Sp','Oc','No','Dc']; const e=Math.floor(Math.log10(n)/3); const v=n/Math.pow(10,e*3);
   return '$'+(v<10?v.toFixed(2):v<100?v.toFixed(1):Math.floor(v))+(s[e-1]||'');
 }
-function num(n){return Math.floor(n).toLocaleString();}
+function num(n){return Math.floor(Number(n)||0).toLocaleString();}
 function totalLevels(){return businesses.reduce((s,b)=>s+b.level,0)}
-function activeMult(){return (1 + state.gems*0.05 + state.rep*0.01) * (Date.now()<state.boostUntil ? state.boostMult : 1) * (state.adFree?2:1)}
-function tapValue(){return (1 + Math.floor(totalLevels()/4)) * activeMult()}
-function incomePerSec(){return businesses.reduce((sum,b)=>sum + (b.level*b.baseIncome*activeMult()),0)}
-function cost(b){return Math.floor(b.baseCost*Math.pow(b.growth,b.level))}
-function prestigeGems(){return Math.floor(Math.pow(state.totalEarned/750000,0.52));}
-function addCash(amount){state.cash += amount; state.totalEarned += amount; state.lifetimeEarned += amount;}
-function statValue(stat){ if(stat==='levels') return totalLevels(); return state[stat]||0; }
+function activeMult(){return (1 + state.gems*0.05 + state.rep*0.008) * (Date.now()<state.boostUntil ? state.boostMult : 1) * (state.adFree?2:1)}
+function tapValue(){return (1 + Math.floor(totalLevels()/3)) * activeMult()}
+function incomePerSec(){return businesses.reduce((sum,b)=>sum + b.level*b.baseIncome*activeMult(),0)}
+function cost(b){return Math.max(1, Math.floor(b.baseCost*Math.pow(b.growth,b.level)))}
+function prestigeGems(){return Math.floor(Math.pow(state.totalEarned/500000,0.52));}
+function addCash(amount){ amount=Number(amount)||0; state.cash += amount; state.totalEarned += amount; state.lifetimeEarned += amount; }
+function statValue(stat){ return stat==='levels' ? totalLevels() : (state[stat]||0); }
 function currentMission(){return missions[Math.min(state.missionIndex, missions.length-1)];}
 function toast(msg){const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toast.timer); toast.timer=setTimeout(()=>t.classList.remove('show'),1600)}
 function fx(text, cls, x, y){const el=document.createElement('div'); el.className='fx '+cls; el.textContent=text; el.style.left=x+'px'; el.style.top=y+'px'; document.body.appendChild(el); setTimeout(()=>el.remove(),900)}
 function showBubble(msg){const q=document.getElementById('queue'); let b=q.querySelector('.bubble'); if(!b){b=document.createElement('div'); b.className='bubble'; q.appendChild(b);} b.textContent=msg; clearTimeout(showBubble.t); showBubble.t=setTimeout(()=>b.remove(),1400)}
 function renderQueue(){const q=document.getElementById('queue'); const bubble=q.querySelector('.bubble'); q.innerHTML=''; for(let i=0;i<4;i++){const c=document.createElement('div'); c.className='customer'; c.textContent=customers[(state.served+i)%customers.length]; q.appendChild(c);} if(bubble) q.appendChild(bubble);}
-function renderBusinesses(){
-  const wrap=document.getElementById('businessesPanel'); wrap.innerHTML='<div class="section-title">Upgrade your town</div>';
-  businesses.forEach((b)=>{
-    const c=cost(b), can=state.cash>=c, locked=b.level===0 && state.cash<c*.25 && b.id!=='stand';
-    const div=document.createElement('div'); div.className='biz-card '+(can?'can ':'')+(locked?'locked':'');
-    const cycleWidth = b.level>0 ? ((performance.now()/10/b.duration)%100) : 0;
-    div.innerHTML=`<div class="biz-icon">${b.icon}</div><div><div class="biz-name">${b.name}<span class="level-badge">Lv ${num(b.level)}</span></div><div class="biz-meta">${b.flavor}</div><div class="biz-income">${fmt(b.level*b.baseIncome*activeMult())}/sec</div><div class="cycle"><div class="cycle-fill" style="width:${cycleWidth}%"></div></div></div><button class="buy" ${can?'':'disabled'} onclick="buyBusiness('${b.id}')">${fmt(c)}</button>`;
+function buildBusinessCards(){
+  const wrap=document.getElementById('businessesPanel');
+  wrap.innerHTML='<div class="section-title">Upgrade your town</div>';
+  businesses.forEach(b=>{
+    const div=document.createElement('div'); div.className='biz-card'; div.id='biz-'+b.id;
+    div.innerHTML=`<div class="biz-icon">${b.icon}</div><div><div class="biz-name">${b.name}<span class="level-badge" id="level-${b.id}">Lv 0</span></div><div class="biz-meta">${b.flavor}</div><div class="biz-income" id="income-${b.id}">$0/sec</div><div class="cycle"><div class="cycle-fill" id="cycle-${b.id}"></div></div></div><button class="buy" id="buy-${b.id}" data-id="${b.id}" type="button">$0</button>`;
     wrap.appendChild(div);
   });
+  wrap.addEventListener('click', e=>{ const btn=e.target.closest('.buy'); if(btn) buyBusiness(btn.dataset.id); });
 }
-function renderMission(){
-  const m=currentMission(), v=statValue(m.stat), pct=Math.min(100,v/m.target*100); const done=v>=m.target;
+function updateHUD(){
+  document.getElementById('cashDisplay').textContent=fmt(state.cash);
+  document.getElementById('perSec').textContent=fmt(incomePerSec())+'/sec';
+  document.getElementById('gemsDisplay').textContent='💎 '+num(state.gems);
+  document.getElementById('repDisplay').textContent='⭐ '+num(state.rep);
+  const boostLeft=Math.max(0,state.boostUntil-Date.now());
+  const pill=document.getElementById('boostPill'); pill.style.display=boostLeft>0?'inline-flex':'none'; if(boostLeft>0) pill.textContent='🔥 '+Math.ceil(boostLeft/60000)+'m';
+}
+function updateBusinesses(){
+  businesses.forEach(b=>{
+    const c=cost(b), can=state.cash>=c, locked=b.level===0 && state.cash<c*.25 && b.id!=='stand';
+    const card=document.getElementById('biz-'+b.id), btn=document.getElementById('buy-'+b.id);
+    if(!card||!btn) return;
+    card.className='biz-card '+(can?'can ':'')+(locked?'locked':'');
+    document.getElementById('level-'+b.id).textContent='Lv '+num(b.level);
+    document.getElementById('income-'+b.id).textContent=fmt(b.level*b.baseIncome*activeMult())+'/sec';
+    btn.textContent=fmt(c); btn.disabled=!can;
+    const bar=document.getElementById('cycle-'+b.id); if(bar) bar.style.width=b.level>0?((performance.now()/10/b.duration)%100)+'%':'0%';
+  });
+}
+function updateMission(){
+  const m=currentMission(), v=statValue(m.stat), pct=Math.min(100,v/m.target*100), done=v>=m.target;
   document.getElementById('missionTitle').textContent='🎯 '+m.title;
   let rew=[]; if(m.reward.cash) rew.push(fmt(m.reward.cash)); if(m.reward.rep) rew.push('⭐ '+m.reward.rep); if(m.reward.gems) rew.push('💎 '+m.reward.gems);
   document.getElementById('missionSub').textContent=`${m.sub} — ${num(Math.min(v,m.target))}/${num(m.target)} | Reward: ${rew.join(' + ')}`;
   document.getElementById('missionFill').style.width=pct+'%';
   document.getElementById('claimMission').disabled=!done;
+}
+function updatePrestige(){
+  const pg=prestigeGems(); document.getElementById('prestigeGems').textContent=num(pg); document.getElementById('prestigeBtn').disabled=pg<1; document.getElementById('prestigeFill').style.width=Math.min(100,(state.totalEarned/500000)*100)+'%';
 }
 function renderStats(){
   document.getElementById('statsGrid').innerHTML=`
@@ -186,34 +228,49 @@ function renderStats(){
   <div class="stat"><div class="stat-label">Lifetime Earned</div><div class="stat-val">${fmt(state.lifetimeEarned)}</div></div>
   <div class="stat"><div class="stat-label">Multiplier</div><div class="stat-val">${activeMult().toFixed(2)}x</div></div>
   <div class="stat"><div class="stat-label">Prestiges</div><div class="stat-val">${num(state.prestigeCount)}</div></div>
-  <div class="stat"><div class="stat-label">Manual Taps</div><div class="stat-val">${num(state.taps)}</div></div>`;
+  <div class="stat"><div class="stat-label">Manual Serves</div><div class="stat-val">${num(state.taps)}</div></div>`;
 }
-function render(){
-  document.getElementById('cashDisplay').textContent=fmt(state.cash);
-  document.getElementById('perSec').textContent=fmt(incomePerSec())+'/sec';
-  document.getElementById('gemsDisplay').textContent='💎 '+num(state.gems);
-  document.getElementById('repDisplay').textContent='⭐ '+num(state.rep);
-  const boostLeft=Math.max(0,state.boostUntil-Date.now()); document.getElementById('boostPill').style.display=boostLeft>0?'inline-flex':'none';
-  if(boostLeft>0) document.getElementById('boostPill').textContent='🔥 '+Math.ceil(boostLeft/60000)+'m';
-  renderQueue(); renderMission(); renderBusinesses(); renderStats();
-  const pg=prestigeGems(); document.getElementById('prestigeGems').textContent=num(pg); document.getElementById('prestigeBtn').disabled=pg<1; document.getElementById('prestigeFill').style.width=Math.min(100,(state.totalEarned/750000)*100)+'%';
+function renderAll(){ updateHUD(); updateBusinesses(); updateMission(); updatePrestige(); renderStats(); }
+window.buyBusiness=function(id){
+  const b=businesses.find(x=>x.id===id); if(!b) return false;
+  const c=cost(b); if(state.cash<c){ toast(`Need ${fmt(c-state.cash)} more`); return false; }
+  state.cash-=c; b.level++;
+  if(b.level===1) showBubble(`${b.name} open!`); else showBubble(`${b.name} upgraded!`);
+  if(b.level%10===0) state.rep+=2;
+  save(); renderAll(); toast(`${b.icon} ${b.name} level ${b.level}`); return true;
 }
-window.buyBusiness=function(id){ const b=businesses.find(x=>x.id===id); const c=cost(b); if(!b||state.cash<c) return; state.cash-=c; b.level++; state.rep += (b.level%10===0)?2:0; save(); render(); toast(`${b.icon} ${b.name} upgraded!`); showBubble('Nice upgrade!'); }
-document.getElementById('serveBtn').addEventListener('click',(e)=>{ const val=tapValue(); addCash(val); state.taps++; state.served++; if(state.served%10===0) state.rep++; save(); const r=e.currentTarget.getBoundingClientRect(); fx('+'+fmt(val),'coin-fx',r.left+r.width/2-24,r.top-8); fx('+1⭐','rep-fx',r.left+r.width/2+18,r.top+10); showBubble(['Fresh!','So good!','More please!','Best in town!'][state.served%4]); render(); });
-document.getElementById('claimMission').addEventListener('click',()=>{const m=currentMission(); if(statValue(m.stat)<m.target) return; if(m.reward.cash) addCash(m.reward.cash); if(m.reward.rep) state.rep+=m.reward.rep; if(m.reward.gems) state.gems+=m.reward.gems; if(state.missionIndex<missions.length-1) state.missionIndex++; save(); render(); toast('Mission reward claimed!');});
-function showAd(cb){ const old=document.activeElement; if(old&&old.tagName==='BUTTON'){old.disabled=true; const txt=old.textContent; old.textContent='Ad loading...'; setTimeout(()=>{old.disabled=false; old.textContent=txt; cb();},1100);} else setTimeout(cb,900); }
-document.getElementById('boost2x').addEventListener('click',()=>showAd(()=>{state.boostMult=2; state.boostUntil=Date.now()+30*60*1000; save(); render(); toast('🔥 2x income active!')}));
-document.getElementById('boostTime').addEventListener('click',()=>showAd(()=>{const v=incomePerSec()*4*3600; addCash(v); save(); render(); toast('🚀 Collected '+fmt(v));}));
-document.getElementById('prestigeBtn').addEventListener('click',()=>{const pg=prestigeGems(); if(pg<1) return; if(!confirm(`Prestige for ${pg} gems? This resets cash and business levels, but gems are permanent.`)) return; state.gems+=pg; state.cash=0; state.totalEarned=0; state.prestigeCount++; businesses.forEach(b=>b.level=0); save(); render(); toast('🏆 Prestiged for '+pg+' gems!');});
-window.iapNoAds=function(){state.adFree=true; save(); render(); toast('Demo purchase: No Ads + 2x active');}
-window.iapGems=function(){state.gems+=500; save(); render(); toast('Demo purchase: +500 gems');}
-window.iapStarter=function(){state.adFree=true; state.gems+=1000; addCash(50000); save(); render(); toast('Demo purchase: Starter Pack');}
-document.querySelectorAll('.tab').forEach(tab=>tab.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active')); tab.classList.add('active'); document.getElementById(tab.dataset.panel+'Panel').classList.add('active'); render();}));
+document.getElementById('serveBtn').addEventListener('click',(e)=>{
+  const val=tapValue(); addCash(val); state.taps++; state.served++; if(state.served%10===0) state.rep++;
+  const r=e.currentTarget.getBoundingClientRect(); fx('+'+fmt(val),'coin-fx',r.left+r.width/2-24,r.top-8); fx('+1','rep-fx',r.left+r.width/2+24,r.top+10);
+  showBubble(['Fresh!','So good!','More please!','Best in town!'][state.served%4]); renderQueue(); save(); renderAll();
+});
+document.getElementById('claimMission').addEventListener('click',()=>{
+  const m=currentMission(); if(statValue(m.stat)<m.target) return;
+  if(m.reward.cash) addCash(m.reward.cash); if(m.reward.rep) state.rep+=m.reward.rep; if(m.reward.gems) state.gems+=m.reward.gems;
+  if(state.missionIndex<missions.length-1) state.missionIndex++; save(); renderAll(); toast('Mission reward claimed!');
+});
+function showAd(cb){ const old=document.activeElement; if(old&&old.tagName==='BUTTON'){old.disabled=true; const txt=old.textContent; old.textContent='Ad loading...'; setTimeout(()=>{old.disabled=false; old.textContent=txt; cb();},900);} else setTimeout(cb,700); }
+document.getElementById('boost2x').addEventListener('click',()=>showAd(()=>{state.boostMult=2; state.boostUntil=Date.now()+30*60*1000; save(); renderAll(); toast('🔥 2x income active!')}));
+document.getElementById('boostTime').addEventListener('click',()=>showAd(()=>{const v=Math.max(25,incomePerSec()*4*3600); addCash(v); save(); renderAll(); toast('🚀 Collected '+fmt(v));}));
+document.getElementById('prestigeBtn').addEventListener('click',()=>{const pg=prestigeGems(); if(pg<1) return; if(!confirm(`Prestige for ${pg} gems? This resets cash and business levels, but gems are permanent.`)) return; state.gems+=pg; state.cash=0; state.totalEarned=0; state.prestigeCount++; businesses.forEach(b=>b.level=0); save(); renderAll(); toast('🏆 Prestiged for '+pg+' gems!');});
+window.iapNoAds=function(){state.adFree=true; save(); renderAll(); toast('Demo purchase: No Ads + 2x active');}
+window.iapGems=function(){state.gems+=500; save(); renderAll(); toast('Demo purchase: +500 gems');}
+window.iapStarter=function(){state.adFree=true; state.gems+=1000; addCash(50000); save(); renderAll(); toast('Demo purchase: Starter Pack');}
+document.querySelectorAll('.tab').forEach(tab=>tab.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active')); tab.classList.add('active'); document.getElementById(tab.dataset.panel+'Panel').classList.add('active'); renderAll();}));
 function processOffline(){ const now=Date.now(); const away=(now-(state.lastSave||now))/1000; if(away<45) return; const earned=incomePerSec()*Math.min(away,4*3600)*0.55; if(earned>5){state.pendingOffline=earned; addCash(earned); document.getElementById('offlineCash').textContent=fmt(earned); document.getElementById('offlineModal').classList.add('show');}}
-document.getElementById('claimOffline').addEventListener('click',()=>{document.getElementById('offlineModal').classList.remove('show'); save(); render();});
-document.getElementById('doubleOffline').addEventListener('click',()=>showAd(()=>{addCash(state.pendingOffline||0); document.getElementById('offlineModal').classList.remove('show'); save(); render(); toast('Offline reward doubled!');}));
-let last=Date.now(); function loop(){ const now=Date.now(), dt=(now-last)/1000; last=now; const inc=incomePerSec()*dt; if(inc>0) addCash(inc); render(); requestAnimationFrame(loop); }
-processOffline(); render(); if(!state.seenTutorial){toast('Serve customers, buy upgrades, prestige for gems.'); state.seenTutorial=true; save();} setInterval(save,5000); requestAnimationFrame(loop);
+document.getElementById('claimOffline').addEventListener('click',()=>{document.getElementById('offlineModal').classList.remove('show'); save(); renderAll();});
+document.getElementById('doubleOffline').addEventListener('click',()=>showAd(()=>{addCash(state.pendingOffline||0); document.getElementById('offlineModal').classList.remove('show'); save(); renderAll(); toast('Offline reward doubled!');}));
+let last=Date.now(), statTick=0;
+function loop(){
+  const now=Date.now(), dt=Math.min(0.25,(now-last)/1000); last=now;
+  const inc=incomePerSec()*dt; if(inc>0) addCash(inc);
+  updateHUD(); updateBusinesses(); updateMission(); updatePrestige();
+  if(++statTick%30===0) renderStats();
+  requestAnimationFrame(loop);
+}
+buildBusinessCards(); renderQueue(); processOffline(); renderAll();
+if(!state.seenTutorial){toast('Serve customers → buy stands → claim missions → prestige.'); state.seenTutorial=true; save();}
+setInterval(save,5000); requestAnimationFrame(loop);
 </script>
 </body>
 </html>

@@ -1,631 +1,219 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#f59e0b" />
+  <link rel="manifest" href="manifest.json" />
   <title>Lemonade Tycoon — Idle Cash Game</title>
   <style>
-    :root {
-      --bg: #0f172a;
-      --card: #1e293b;
-      --accent: #f59e0b;
-      --accent2: #10b981;
-      --text: #f1f5f9;
-      --muted: #94a3b8;
-      --danger: #ef4444;
-      --gold: #fbbf24;
+    :root{
+      --sky:#7dd3fc; --sky2:#bae6fd; --grass:#22c55e; --road:#475569;
+      --bg:#101827; --panel:#172033; --panel2:#1f2a44; --line:#334155;
+      --text:#f8fafc; --muted:#94a3b8; --gold:#fbbf24; --lemon:#fde047;
+      --green:#10b981; --blue:#38bdf8; --purple:#8b5cf6; --red:#ef4444;
+      --shadow:0 12px 32px rgba(0,0,0,.28);
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      min-height: 100vh;
-      overflow-x: hidden;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .top-bar {
-      background: var(--card);
-      padding: 12px 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid #334155;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-    .cash-display {
-      font-size: 1.4rem;
-      font-weight: 800;
-      color: var(--gold);
-    }
-    .per-sec {
-      font-size: 0.75rem;
-      color: var(--muted);
-    }
-    .gems-display {
-      font-size: 1rem;
-      font-weight: 700;
-      color: #38bdf8;
-    }
-    .main-btn {
-      background: var(--accent);
-      color: #000;
-      border: none;
-      border-radius: 50%;
-      width: 80px;
-      height: 80px;
-      font-size: 2rem;
-      font-weight: 900;
-      cursor: pointer;
-      box-shadow: 0 4px 15px rgba(245,158,11,0.4);
-      transition: transform 0.08s, box-shadow 0.2s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      user-select: none;
-    }
-    .main-btn:active { transform: scale(0.92); }
-    .main-btn:hover { box-shadow: 0 6px 20px rgba(245,158,11,0.6); }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;-webkit-tap-highlight-color:transparent;overflow-x:hidden}
+    button{font-family:inherit}
+    .app{max-width:520px;margin:0 auto;min-height:100vh;background:linear-gradient(180deg,#0f172a 0%,#111827 100%);position:relative;box-shadow:0 0 0 1px rgba(255,255,255,.04)}
+    .topbar{position:sticky;top:0;z-index:50;background:rgba(15,23,42,.94);backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,.08);padding:10px 14px;display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}
+    .cash{font-size:1.55rem;font-weight:950;color:var(--gold);letter-spacing:-.03em;text-shadow:0 2px 0 rgba(0,0,0,.22)}
+    .rate{font-size:.78rem;color:var(--muted);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .pill{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:4px 8px;background:#243047;border:1px solid rgba(255,255,255,.07);font-size:.76rem;font-weight:800;color:#dbeafe}
+    .gems{color:#67e8f9}.rep{color:#c4b5fd}.boost{color:#fb7185}
 
-    .container { padding: 16px; max-width: 480px; margin: 0 auto; }
-    .section-title {
-      font-size: 0.85rem;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--muted);
-      margin: 16px 0 8px;
-    }
+    .scene{position:relative;height:305px;overflow:hidden;background:linear-gradient(180deg,var(--sky) 0%,var(--sky2) 58%,#a7f3d0 59%,#16a34a 76%,#475569 77%,#334155 100%);border-bottom:3px solid #0f172a}
+    .sun{position:absolute;width:64px;height:64px;right:30px;top:24px;border-radius:50%;background:radial-gradient(circle,#fff7ad 0%,#facc15 58%,#f59e0b 100%);box-shadow:0 0 35px rgba(250,204,21,.7);animation:pulseSun 3s ease-in-out infinite}
+    @keyframes pulseSun{50%{transform:scale(1.06)}}
+    .cloud{position:absolute;width:88px;height:28px;background:white;border-radius:999px;opacity:.82;filter:drop-shadow(0 4px 3px rgba(0,0,0,.08));animation:cloudMove 18s linear infinite}.cloud:before,.cloud:after{content:"";position:absolute;background:white;border-radius:50%}.cloud:before{width:36px;height:36px;left:14px;top:-16px}.cloud:after{width:45px;height:45px;right:12px;top:-22px}.c1{left:-90px;top:38px}.c2{left:130px;top:72px;transform:scale(.7);animation-duration:24s;animation-delay:-10s}@keyframes cloudMove{to{transform:translateX(640px)}}
+    .stand{position:absolute;left:24px;bottom:58px;width:205px;height:156px;filter:drop-shadow(0 12px 10px rgba(0,0,0,.28));animation:standBob 2.6s ease-in-out infinite}.awning{height:40px;background:repeating-linear-gradient(90deg,#ef4444 0 24px,#fff 24px 48px);border:4px solid #7f1d1d;border-radius:12px 12px 4px 4px;box-shadow:inset 0 -7px rgba(0,0,0,.12)}.counter{position:absolute;left:8px;right:8px;top:38px;height:83px;background:linear-gradient(180deg,#f59e0b,#b45309);border:5px solid #78350f;border-radius:7px}.sign{position:absolute;left:31px;top:50px;background:#fde047;color:#713f12;font-weight:1000;padding:8px 14px;border-radius:9px;border:3px solid #713f12;transform:rotate(-2deg);box-shadow:0 5px 0 rgba(0,0,0,.12)}.pitcher{position:absolute;right:22px;top:55px;width:35px;height:48px;border:4px solid #e0f2fe;border-radius:8px 8px 14px 14px;background:linear-gradient(180deg,rgba(255,255,255,.5),rgba(255,255,255,.05));overflow:hidden}.juice{position:absolute;left:0;right:0;bottom:0;height:72%;background:linear-gradient(180deg,#fde047,#f59e0b);animation:juiceWobble 1.2s ease-in-out infinite}.wheels{position:absolute;left:18px;right:18px;bottom:13px;display:flex;justify-content:space-between}.wheel{width:35px;height:35px;background:#1e293b;border:6px solid #020617;border-radius:50%}.lemon-tree{position:absolute;left:6px;bottom:126px;font-size:48px;animation:sway 2.4s ease-in-out infinite}@keyframes standBob{50%{transform:translateY(-2px)}}@keyframes juiceWobble{50%{height:62%}}@keyframes sway{50%{transform:rotate(4deg)}}
+    .vendor{position:absolute;left:109px;bottom:129px;font-size:42px;animation:work 1s ease-in-out infinite;transform-origin:bottom center}@keyframes work{0%,100%{transform:rotate(-5deg)}50%{transform:rotate(7deg) translateY(-2px)}}
+    .queue{position:absolute;right:8px;bottom:69px;width:224px;height:96px}.customer{position:absolute;bottom:0;font-size:39px;filter:drop-shadow(0 6px 3px rgba(0,0,0,.22));animation:customerBounce .8s ease-in-out infinite}.customer:nth-child(1){right:132px}.customer:nth-child(2){right:84px;animation-delay:.16s}.customer:nth-child(3){right:36px;animation-delay:.28s}.customer:nth-child(4){right:-12px;animation-delay:.42s}.bubble{position:absolute;right:112px;bottom:75px;background:white;color:#0f172a;padding:6px 10px;border-radius:16px 16px 16px 2px;font-size:.78rem;font-weight:900;box-shadow:0 5px 12px rgba(0,0,0,.15);animation:pop .45s ease-out}.bubble:after{content:"";position:absolute;left:8px;bottom:-6px;border:7px solid transparent;border-top-color:white;border-left:0}@keyframes customerBounce{50%{transform:translateY(-5px)}}@keyframes pop{from{transform:scale(.7);opacity:0}to{transform:scale(1);opacity:1}}
+    .roadline{position:absolute;left:0;right:0;bottom:29px;height:5px;background:repeating-linear-gradient(90deg,#f8fafc 0 44px,transparent 44px 82px);opacity:.65;animation:road 1.4s linear infinite}@keyframes road{to{background-position:-82px 0}}
+    .serve-wrap{position:absolute;left:0;right:0;bottom:10px;display:flex;justify-content:center;pointer-events:none}.serve-btn{pointer-events:auto;border:0;border-radius:999px;background:linear-gradient(180deg,#fde047,#f59e0b);color:#422006;font-size:1.05rem;font-weight:1000;padding:15px 28px;box-shadow:0 8px 0 #92400e,0 16px 28px rgba(0,0,0,.28);cursor:pointer;transition:transform .05s,filter .15s}.serve-btn:active{transform:translateY(5px);box-shadow:0 3px 0 #92400e,0 9px 22px rgba(0,0,0,.25)}.serve-btn.ready{animation:readyPulse 1s ease-in-out infinite}@keyframes readyPulse{50%{filter:brightness(1.13);transform:translateY(-2px)}}
+    .fx{position:absolute;z-index:80;pointer-events:none;font-weight:1000;text-shadow:0 2px 2px rgba(0,0,0,.3);animation:floatUp .9s ease-out forwards}.coin-fx{color:#fde047;font-size:1.2rem}.rep-fx{color:#c4b5fd;font-size:1rem}@keyframes floatUp{to{opacity:0;transform:translateY(-70px) scale(1.3)}}
 
-    .biz-card {
-      background: var(--card);
-      border-radius: 12px;
-      padding: 14px;
-      margin-bottom: 10px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      border: 1px solid #334155;
-      transition: border-color 0.2s;
-    }
-    .biz-card.locked { opacity: 0.5; }
-    .biz-icon {
-      width: 48px; height: 48px;
-      border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.6rem;
-      background: #334155;
-      flex-shrink: 0;
-    }
-    .biz-info { flex: 1; }
-    .biz-name { font-weight: 700; font-size: 0.95rem; }
-    .biz-level { font-size: 0.75rem; color: var(--muted); }
-    .biz-income { font-size: 0.8rem; color: var(--accent2); font-weight: 600; }
-    .upgrade-btn {
-      background: var(--accent2);
-      color: #000;
-      border: none;
-      border-radius: 8px;
-      padding: 8px 14px;
-      font-weight: 700;
-      font-size: 0.85rem;
-      cursor: pointer;
-      transition: filter 0.15s;
-      white-space: nowrap;
-    }
-    .upgrade-btn:disabled { background: #475569; color: #94a3b8; cursor: not-allowed; }
-    .upgrade-btn:not(:disabled):active { filter: brightness(0.9); }
+    .content{padding:12px 14px 26px}.mission{background:linear-gradient(135deg,#32214f,#1d2440);border:1px solid rgba(196,181,253,.35);border-radius:18px;padding:12px;margin-bottom:12px;box-shadow:var(--shadow);position:relative;overflow:hidden}.mission:before{content:"";position:absolute;inset:-60px auto auto -60px;width:130px;height:130px;background:radial-gradient(circle,rgba(253,224,71,.24),transparent 70%)}.mission-top{display:flex;justify-content:space-between;gap:10px;align-items:center;position:relative}.mission-title{font-weight:1000;font-size:.98rem}.mission-sub{color:#d8b4fe;font-size:.78rem;margin-top:2px}.claim{border:0;border-radius:12px;background:linear-gradient(180deg,#22c55e,#16a34a);color:white;font-weight:1000;padding:10px 12px;box-shadow:0 5px 0 #166534;cursor:pointer}.claim:disabled{background:#475569;color:#94a3b8;box-shadow:0 5px 0 #243047}.bar{height:9px;background:#263449;border-radius:999px;overflow:hidden;margin-top:10px;border:1px solid rgba(255,255,255,.06)}.fill{height:100%;background:linear-gradient(90deg,#22c55e,#fde047);border-radius:999px;transition:width .25s ease}
 
-    .prestige-bar {
-      background: var(--card);
-      border-radius: 12px;
-      padding: 14px;
-      text-align: center;
-      border: 1px solid var(--gold);
-    }
-    .prestige-btn {
-      background: var(--gold);
-      color: #000;
-      border: none;
-      border-radius: 8px;
-      padding: 10px 20px;
-      font-weight: 800;
-      font-size: 0.95rem;
-      cursor: pointer;
-      margin-top: 8px;
-    }
-    .prestige-btn:disabled { background: #475569; color: #94a3b8; cursor: not-allowed; }
-
-    .ad-row {
-      display: flex;
-      gap: 10px;
-      margin: 12px 0;
-    }
-    .ad-btn {
-      flex: 1;
-      background: #7c3aed;
-      color: #fff;
-      border: none;
-      border-radius: 10px;
-      padding: 12px;
-      font-weight: 700;
-      font-size: 0.85rem;
-      cursor: pointer;
-      text-align: center;
-    }
-    .ad-btn span { display: block; font-size: 1.4rem; }
-    .ad-btn:active { filter: brightness(0.9); }
-
-    .shop-card {
-      background: var(--card);
-      border-radius: 12px;
-      padding: 14px;
-      margin-bottom: 10px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      border: 1px solid #334155;
-    }
-    .shop-btn {
-      background: #38bdf8;
-      color: #000;
-      border: none;
-      border-radius: 8px;
-      padding: 8px 14px;
-      font-weight: 700;
-      font-size: 0.85rem;
-      cursor: pointer;
-    }
-
-    .tabs {
-      display: flex;
-      gap: 4px;
-      background: var(--card);
-      border-radius: 12px;
-      padding: 4px;
-      margin-bottom: 12px;
-    }
-    .tab {
-      flex: 1;
-      text-align: center;
-      padding: 10px;
-      border-radius: 8px;
-      font-weight: 700;
-      font-size: 0.85rem;
-      cursor: pointer;
-      color: var(--muted);
-      background: transparent;
-      border: none;
-    }
-    .tab.active { background: #334155; color: var(--text); }
-
-    .panel { display: none; }
-    .panel.active { display: block; }
-
-    .offline-popup {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.85);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 200;
-      padding: 20px;
-    }
-    .offline-popup.show { display: flex; }
-    .offline-box {
-      background: var(--card);
-      border-radius: 16px;
-      padding: 24px;
-      max-width: 340px;
-      width: 100%;
-      text-align: center;
-      border: 1px solid var(--gold);
-    }
-    .offline-cash { font-size: 1.8rem; font-weight: 800; color: var(--gold); margin: 8px 0; }
-    .watch-ad-btn {
-      background: #7c3aed;
-      color: #fff;
-      border: none;
-      border-radius: 10px;
-      padding: 12px 20px;
-      font-weight: 800;
-      font-size: 1rem;
-      cursor: pointer;
-      margin-top: 12px;
-      width: 100%;
-    }
-    .claim-btn {
-      background: var(--accent2);
-      color: #000;
-      border: none;
-      border-radius: 10px;
-      padding: 12px 20px;
-      font-weight: 800;
-      font-size: 1rem;
-      cursor: pointer;
-      margin-top: 8px;
-      width: 100%;
-    }
-
-    .tap-fx {
-      position: absolute;
-      pointer-events: none;
-      font-weight: 800;
-      color: var(--gold);
-      font-size: 1.1rem;
-      animation: floatUp 0.7s ease-out forwards;
-    }
-    @keyframes floatUp {
-      0% { opacity: 1; transform: translateY(0) scale(1); }
-      100% { opacity: 0; transform: translateY(-60px) scale(1.3); }
-    }
-
-    .progress-wrap { margin-top: 6px; }
-    .progress-bar {
-      height: 6px;
-      background: #334155;
-      border-radius: 3px;
-      overflow: hidden;
-    }
-    .progress-fill {
-      height: 100%;
-      background: var(--accent2);
-      border-radius: 3px;
-      transition: width 0.3s;
-    }
-
-    .footer-note {
-      text-align: center;
-      color: var(--muted);
-      font-size: 0.7rem;
-      margin: 20px 0 40px;
-    }
+    .tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;background:#111827;padding:6px;border-radius:18px;border:1px solid rgba(255,255,255,.06);position:sticky;top:61px;z-index:40}.tab{border:0;border-radius:13px;padding:9px 4px;background:transparent;color:var(--muted);font-weight:1000;font-size:.76rem;cursor:pointer}.tab.active{background:linear-gradient(180deg,#334155,#243047);color:white;box-shadow:inset 0 1px rgba(255,255,255,.08)}.panel{display:none;padding-top:12px}.panel.active{display:block}.section-title{font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:#a3a3a3;font-weight:1000;margin:8px 2px 10px}
+    .biz-card{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:12px;margin-bottom:10px;display:grid;grid-template-columns:54px 1fr auto;gap:10px;align-items:center;box-shadow:0 8px 18px rgba(0,0,0,.17);position:relative;overflow:hidden}.biz-card.locked{opacity:.54}.biz-card.can{border-color:rgba(34,197,94,.45)}.biz-icon{width:54px;height:54px;border-radius:16px;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 30% 20%,#475569,#1e293b);font-size:1.8rem;box-shadow:inset 0 2px rgba(255,255,255,.06)}.biz-name{font-weight:1000}.biz-meta{color:var(--muted);font-size:.77rem;margin-top:2px}.biz-income{color:#86efac;font-weight:900;font-size:.8rem;margin-top:4px}.level-badge{display:inline-flex;gap:3px;background:#0f172a;border-radius:999px;padding:3px 7px;border:1px solid rgba(255,255,255,.06);font-size:.72rem;color:#e2e8f0;margin-left:5px}.buy{min-width:83px;border:0;border-radius:14px;background:linear-gradient(180deg,#34d399,#059669);color:#052e16;font-weight:1000;padding:11px 8px;box-shadow:0 5px 0 #065f46;cursor:pointer}.buy:disabled{background:#475569;color:#94a3b8;box-shadow:0 5px 0 #263449}.buy:active:not(:disabled){transform:translateY(4px);box-shadow:0 1px 0 #065f46}.cycle{height:6px;background:#0f172a;border-radius:999px;overflow:hidden;margin-top:7px}.cycle-fill{height:100%;width:0;background:linear-gradient(90deg,#38bdf8,#a78bfa);border-radius:999px}
+    .upgrade-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.power-card,.shop-card{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:13px;box-shadow:0 8px 18px rgba(0,0,0,.17)}.power-icon{font-size:1.8rem}.power-title{font-weight:1000;margin-top:5px}.power-sub{color:var(--muted);font-size:.76rem;margin:3px 0 10px;min-height:34px}.purple-btn,.blue-btn,.gold-btn{width:100%;border:0;border-radius:13px;color:white;font-weight:1000;padding:11px 8px;cursor:pointer}.purple-btn{background:linear-gradient(180deg,#a78bfa,#7c3aed);box-shadow:0 5px 0 #4c1d95}.blue-btn{background:linear-gradient(180deg,#38bdf8,#0284c7);box-shadow:0 5px 0 #075985}.gold-btn{background:linear-gradient(180deg,#fde047,#f59e0b);color:#422006;box-shadow:0 5px 0 #92400e}.purple-btn:active,.blue-btn:active,.gold-btn:active{transform:translateY(4px);box-shadow:none}.prestige{margin-top:10px;background:linear-gradient(135deg,#422006,#1f2937);border-color:rgba(251,191,36,.45)}.shop-card{display:grid;grid-template-columns:44px 1fr auto;gap:10px;align-items:center;margin-bottom:10px}.shop-icon{font-size:2rem}.shop-title{font-weight:1000}.shop-sub{color:var(--muted);font-size:.76rem;margin-top:2px}.price{border:0;border-radius:12px;background:#67e8f9;color:#083344;font-weight:1000;padding:10px 11px;cursor:pointer}.stats{display:grid;grid-template-columns:1fr 1fr;gap:9px}.stat{background:#172033;border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:12px}.stat-label{color:var(--muted);font-size:.75rem}.stat-val{font-size:1.2rem;font-weight:1000;color:white;margin-top:3px}.toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%) translateY(80px);background:#020617;color:white;border:1px solid rgba(255,255,255,.1);border-radius:999px;padding:12px 16px;font-weight:900;box-shadow:var(--shadow);z-index:200;opacity:0;transition:.28s}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    .modal{position:fixed;inset:0;background:rgba(2,6,23,.82);display:none;align-items:center;justify-content:center;padding:18px;z-index:160}.modal.show{display:flex}.modal-box{max-width:360px;width:100%;background:linear-gradient(180deg,#1f2a44,#111827);border:1px solid rgba(251,191,36,.45);border-radius:24px;padding:22px;text-align:center;box-shadow:var(--shadow)}.modal-title{font-size:1.35rem;font-weight:1000}.modal-cash{font-size:2rem;color:var(--gold);font-weight:1000;margin:8px 0}.modal-sub{color:var(--muted);font-size:.88rem}.modal-actions{display:grid;gap:9px;margin-top:16px}
+    @media (max-width:390px){.scene{height:292px}.stand{transform:scale(.92);transform-origin:left bottom}.queue{right:-12px}.cash{font-size:1.36rem}.tabs{top:57px}.upgrade-grid{grid-template-columns:1fr}.biz-card{grid-template-columns:49px 1fr auto}.biz-icon{width:49px;height:49px}}
   </style>
 </head>
 <body>
-  <div class="top-bar">
-    <div>
-      <div class="cash-display" id="cashDisplay">$0</div>
-      <div class="per-sec" id="perSec">$0/sec</div>
-    </div>
-    <div class="gems-display" id="gemsDisplay">💎 0</div>
-  </div>
-
-  <div class="container">
-    <div style="text-align:center; margin: 18px 0;">
-      <button class="main-btn" id="tapBtn">🍋</button>
-      <div style="margin-top:8px; font-size:0.8rem; color:var(--muted);">Tap to sell lemonade!</div>
-    </div>
-
-    <div class="tabs">
-      <button class="tab active" data-panel="businesses">Businesses</button>
-      <button class="tab" data-panel="upgrades">Upgrades</button>
-      <button class="tab" data-panel="shop">Shop</button>
-    </div>
-
-    <div class="panel active" id="businessesPanel"></div>
-    <div class="panel" id="upgradesPanel">
-      <div class="section-title">Boosts</div>
-      <div class="ad-row">
-        <button class="ad-btn" id="boost2x">⏱️<span>2x Income</span>Watch Ad</button>
-        <button class="ad-btn" id="boostTime">🚀<span>Skip 4 Hours</span>Watch Ad</button>
+  <main class="app">
+    <header class="topbar">
+      <div>
+        <div class="cash" id="cashDisplay">$0</div>
+        <div class="rate"><span id="perSec">$0/sec</span><span class="pill boost" id="boostPill" style="display:none">🔥 2x</span></div>
       </div>
-      <div class="prestige-bar">
-        <div style="font-weight:700;">🏆 Prestige</div>
-        <div style="font-size:0.85rem; color:var(--muted); margin-top:4px;">Reset for permanent multipliers</div>
-        <div style="font-size:0.9rem; margin-top:6px;">Next: <strong id="prestigeGems">0</strong> 💎</div>
-        <button class="prestige-btn" id="prestigeBtn" disabled>Prestige Now</button>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">
+        <span class="pill gems" id="gemsDisplay">💎 0</span>
+        <span class="pill rep" id="repDisplay">⭐ 0</span>
       </div>
-    </div>
-    <div class="panel" id="shopPanel">
-      <div class="section-title">Premium</div>
-      <div class="shop-card">
-        <div style="font-size:1.6rem;">🚫</div>
-        <div style="flex:1;">
-          <div style="font-weight:700;">Remove Ads + 2x Forever</div>
-          <div style="font-size:0.8rem; color:var(--muted);">No forced ads. Permanent 2x multiplier.</div>
+    </header>
+
+    <section class="scene" id="scene">
+      <div class="sun"></div><div class="cloud c1"></div><div class="cloud c2"></div>
+      <div class="lemon-tree">🌳</div>
+      <div class="stand"><div class="awning"></div><div class="counter"><div class="sign">LEMONADE</div><div class="pitcher"><div class="juice"></div></div></div><div class="wheels"><div class="wheel"></div><div class="wheel"></div></div></div>
+      <div class="vendor" id="vendor">🧑‍🍳</div>
+      <div class="queue" id="queue"></div>
+      <div class="roadline"></div>
+      <div class="serve-wrap"><button class="serve-btn ready" id="serveBtn">🍋 Serve Customer</button></div>
+    </section>
+
+    <section class="content">
+      <div class="mission" id="missionCard">
+        <div class="mission-top">
+          <div><div class="mission-title" id="missionTitle">Mission</div><div class="mission-sub" id="missionSub">Make progress to claim rewards</div></div>
+          <button class="claim" id="claimMission" disabled>Claim</button>
         </div>
-        <button class="shop-btn" onclick="iapNoAds()">$4.99</button>
+        <div class="bar"><div class="fill" id="missionFill"></div></div>
       </div>
-      <div class="shop-card">
-        <div style="font-size:1.6rem;">💎</div>
-        <div style="flex:1;">
-          <div style="font-weight:700;">Gem Pack (500)</div>
-          <div style="font-size:0.8rem; color:var(--muted);">Instant prestige currency.</div>
-        </div>
-        <button class="shop-btn" onclick="iapGems()">$2.99</button>
-      </div>
-      <div class="shop-card">
-        <div style="font-size:1.6rem;">🚀</div>
-        <div style="flex:1;">
-          <div style="font-weight:700;">Starter Pack</div>
-          <div style="font-size:0.8rem; color:var(--muted);">No ads + 1,000 gems + 5x 4h skips.</div>
-        </div>
-        <button class="shop-btn" onclick="iapStarter()">$9.99</button>
-      </div>
-    </div>
 
-    <div class="footer-note">
-      💡 Tip: Prestige often. Gems = permanent power.<br>
-      Play on Poki / CrazyGames / itch.io for instant traffic.
-    </div>
-  </div>
+      <nav class="tabs">
+        <button class="tab active" data-panel="businesses">🏪 Build</button>
+        <button class="tab" data-panel="boosts">⚡ Boost</button>
+        <button class="tab" data-panel="shop">💎 Shop</button>
+        <button class="tab" data-panel="stats">📊 Stats</button>
+      </nav>
 
-  <div class="offline-popup" id="offlinePopup">
-    <div class="offline-box">
-      <div style="font-size:1.3rem; font-weight:800;">💰 Welcome Back!</div>
-      <div style="font-size:0.9rem; color:var(--muted); margin-top:4px;">You earned while away</div>
-      <div class="offline-cash" id="offlineCash">$0</div>
-      <button class="watch-ad-btn" id="watchAdBtn">📺 Watch Ad for 2x</button>
-      <button class="claim-btn" id="claimBtn">Claim</button>
-    </div>
-  </div>
+      <div class="panel active" id="businessesPanel"></div>
+      <div class="panel" id="boostsPanel">
+        <div class="section-title">Rewarded boosts</div>
+        <div class="upgrade-grid">
+          <div class="power-card"><div class="power-icon">🔥</div><div class="power-title">2x Income</div><div class="power-sub">Doubles all business and tap income for 30 minutes.</div><button class="purple-btn" id="boost2x">Watch Ad</button></div>
+          <div class="power-card"><div class="power-icon">🚀</div><div class="power-title">Skip 4 Hours</div><div class="power-sub">Instantly collect four hours of active income.</div><button class="blue-btn" id="boostTime">Watch Ad</button></div>
+        </div>
+        <div class="power-card prestige"><div class="power-icon">🏆</div><div class="power-title">Prestige Stand</div><div class="power-sub">Reset your town for permanent gems. Each gem adds +5% income forever.</div><div class="bar"><div class="fill" id="prestigeFill"></div></div><div style="margin:10px 0;color:#fde68a;font-weight:900">Earn now: <span id="prestigeGems">0</span> 💎</div><button class="gold-btn" id="prestigeBtn" disabled>Prestige</button></div>
+      </div>
+      <div class="panel" id="shopPanel">
+        <div class="section-title">Premium hooks</div>
+        <div class="shop-card"><div class="shop-icon">🚫</div><div><div class="shop-title">No Ads + 2x Forever</div><div class="shop-sub">Best conversion item. Keeps rewarded boosts claimable.</div></div><button class="price" onclick="iapNoAds()">$4.99</button></div>
+        <div class="shop-card"><div class="shop-icon">💎</div><div><div class="shop-title">500 Gems</div><div class="shop-sub">Permanent +2,500% income multiplier.</div></div><button class="price" onclick="iapGems()">$2.99</button></div>
+        <div class="shop-card"><div class="shop-icon">🎁</div><div><div class="shop-title">Starter Pack</div><div class="shop-sub">No ads, 1,000 gems, and instant cash.</div></div><button class="price" onclick="iapStarter()">$9.99</button></div>
+      </div>
+      <div class="panel" id="statsPanel"><div class="section-title">Tycoon stats</div><div class="stats" id="statsGrid"></div></div>
+    </section>
+  </main>
+
+  <div class="modal" id="offlineModal"><div class="modal-box"><div class="modal-title">💰 Welcome Back!</div><div class="modal-sub">Your stands kept selling while you were away.</div><div class="modal-cash" id="offlineCash">$0</div><div class="modal-actions"><button class="purple-btn" id="doubleOffline">Watch Ad for 2x</button><button class="gold-btn" id="claimOffline">Claim</button></div></div></div>
+  <div class="toast" id="toast">Saved</div>
 
 <script>
-// ==================== GAME DATA ====================
-const businesses = [
-  { id: 'stand',   name: 'Lemonade Stand',   icon: '🍋', baseCost: 10,      baseIncome: 1,      growth: 1.15, level: 0, unlockAt: 0 },
-  { id: 'cart',    name: 'Food Cart',        icon: '🌭', baseCost: 120,     baseIncome: 8,      growth: 1.16, level: 0, unlockAt: 0 },
-  { id: 'truck',   name: 'Food Truck',       icon: '🚚', baseCost: 900,     baseIncome: 45,     growth: 1.17, level: 0, unlockAt: 0 },
-  { id: 'cafe',    name: 'Corner Cafe',      icon: '☕', baseCost: 6000,    baseIncome: 250,    growth: 1.18, level: 0, unlockAt: 0 },
-  { id: 'diner',   name: 'Retro Diner',      icon: '🍔', baseCost: 45000,   baseIncome: 1400,   growth: 1.19, level: 0, unlockAt: 0 },
-  { id: 'bbq',     name: 'BBQ Pit',          icon: '🍖', baseCost: 300000,  baseIncome: 8000,   growth: 1.20, level: 0, unlockAt: 0 },
-  { id: 'bistro',  name: 'French Bistro',    icon: '🥐', baseCost: 2000000, baseIncome: 45000,  growth: 1.21, level: 0, unlockAt: 0 },
-  { id: 'steak',   name: 'Steakhouse',       icon: '🥩', baseCost: 15000000,baseIncome: 280000, growth: 1.22, level: 0, unlockAt: 0 },
+const VERSION = 2;
+const businessDefaults = [
+  {id:'stand', name:'Lemonade Stand', icon:'🍋', baseCost:10, baseIncome:0.45, growth:1.13, duration:1.2, level:0, flavor:'Street corner classic'},
+  {id:'cart', name:'Food Cart', icon:'🌭', baseCost:85, baseIncome:3.2, growth:1.145, duration:1.5, level:0, flavor:'Snacks bring bigger crowds'},
+  {id:'truck', name:'Food Truck', icon:'🚚', baseCost:620, baseIncome:18, growth:1.155, duration:1.8, level:0, flavor:'Mobile lemonade delivery'},
+  {id:'cafe', name:'Corner Cafe', icon:'☕', baseCost:4200, baseIncome:105, growth:1.165, duration:2.1, level:0, flavor:'Upscale drinks, better tips'},
+  {id:'diner', name:'Retro Diner', icon:'🍔', baseCost:29000, baseIncome:620, growth:1.175, duration:2.4, level:0, flavor:'Families love combos'},
+  {id:'bbq', name:'BBQ Pit', icon:'🍖', baseCost:210000, baseIncome:3800, growth:1.185, duration:2.7, level:0, flavor:'Sweet tea margins explode'},
+  {id:'bistro', name:'French Bistro', icon:'🥐', baseCost:1500000, baseIncome:24000, growth:1.195, duration:3.0, level:0, flavor:'Premium tourists'},
+  {id:'steak', name:'Steakhouse', icon:'🥩', baseCost:12000000, baseIncome:160000, growth:1.205, duration:3.3, level:0, flavor:'Big spenders, big tickets'}
 ];
-
+let businesses = JSON.parse(JSON.stringify(businessDefaults));
 let state = {
-  cash: 0,
-  gems: 0,
-  totalEarned: 0,
-  tapValue: 1,
-  globalMult: 1,
-  adFree: false,
-  boostMult: 1,
-  boostUntil: 0,
-  prestigeCount: 0,
-  lastSave: Date.now(),
+  version:VERSION, cash:0, gems:0, rep:0, totalEarned:0, lifetimeEarned:0, taps:0, served:0,
+  boostMult:1, boostUntil:0, adFree:false, prestigeCount:0, lastSave:Date.now(), missionIndex:0,
+  pendingOffline:0, seenTutorial:false
 };
-
-// ==================== SAVE / LOAD ====================
-function save() {
-  state.lastSave = Date.now();
-  localStorage.setItem('lt_save', JSON.stringify({ state, businesses }));
-}
-function load() {
-  const raw = localStorage.getItem('lt_save');
-  if (!raw) return;
-  try {
-    const data = JSON.parse(raw);
-    Object.assign(state, data.state);
-    data.businesses.forEach((b, i) => { if (businesses[i]) Object.assign(businesses[i], b); });
-  } catch(e) {}
+const customers = ['🧑','👩','👨','👵','🧔','👱‍♀️','🧕','👩‍💼','🧑‍🚀'];
+const missions = [
+  {title:'First Sale', sub:'Serve 5 thirsty customers', target:5, stat:'served', reward:{cash:25, rep:2}},
+  {title:'Tiny Tycoon', sub:'Own 3 total business levels', target:3, stat:'levels', reward:{cash:90, rep:5}},
+  {title:'Hundred Dollar Day', sub:'Earn $100 lifetime', target:100, stat:'lifetimeEarned', reward:{cash:125, rep:10}},
+  {title:'Automate the Street', sub:'Own 10 total business levels', target:10, stat:'levels', reward:{cash:600, rep:20}},
+  {title:'Local Favorite', sub:'Serve 50 customers', target:50, stat:'served', reward:{cash:2500, gems:2}},
+  {title:'Millionaire Mix', sub:'Earn $1,000,000 lifetime', target:1000000, stat:'lifetimeEarned', reward:{cash:100000, gems:10}}
+];
+function save(){ state.lastSave=Date.now(); localStorage.setItem('lemonade_tycoon_v2', JSON.stringify({state,businesses})); }
+function load(){
+  const v2 = localStorage.getItem('lemonade_tycoon_v2');
+  if(v2){ try{const data=JSON.parse(v2); Object.assign(state,data.state||{}); (data.businesses||[]).forEach((b,i)=>businesses[i]&&Object.assign(businesses[i],b)); return;}catch(e){} }
+  const old = localStorage.getItem('lt_save');
+  if(old){ try{const data=JSON.parse(old); Object.assign(state,{cash:data.state.cash||0,gems:data.state.gems||0,totalEarned:data.state.totalEarned||0,lifetimeEarned:data.state.totalEarned||0,boostMult:data.state.boostMult||1,boostUntil:data.state.boostUntil||0,adFree:data.state.adFree||false,prestigeCount:data.state.prestigeCount||0,lastSave:data.state.lastSave||Date.now()}); (data.businesses||[]).forEach((b,i)=>businesses[i]&&(businesses[i].level=b.level||0)); state.rep=Math.floor(state.lifetimeEarned/1000); state.version=VERSION; }catch(e){} }
 }
 load();
-
-// ==================== OFFLINE EARNINGS ====================
-function processOffline() {
-  const now = Date.now();
-  const away = (now - state.lastSave) / 1000;
-  if (away < 30) return; // ignore short gaps
-  const cap = 4 * 3600; // 4 hour cap
-  const effective = Math.min(away, cap);
-  const perSec = calcTotalIncome() / (state.boostUntil > now ? 1 : 1); // boost doesn't apply offline
-  const earned = perSec * effective * 0.5; // 50% offline efficiency
-  if (earned > 10) {
-    state.cash += earned;
-    state.totalEarned += earned;
-    document.getElementById('offlineCash').textContent = fmt(earned);
-    document.getElementById('offlinePopup').classList.add('show');
-  }
+function fmt(n){
+  n = Math.max(0, Number(n)||0);
+  if(n < 100) return '$' + (n % 1 === 0 ? Math.floor(n).toLocaleString() : n.toFixed(1));
+  if(n < 1000) return '$' + Math.floor(n).toLocaleString();
+  const s=['K','M','B','T','Qa','Qi','Sx','Sp','Oc','No','Dc']; const e=Math.floor(Math.log10(n)/3); const v=n/Math.pow(10,e*3);
+  return '$'+(v<10?v.toFixed(2):v<100?v.toFixed(1):Math.floor(v))+(s[e-1]||'');
 }
-
-// ==================== FORMATTING ====================
-function fmt(n) {
-  if (n < 1000) return '$' + Math.floor(n).toLocaleString();
-  const s = ['K','M','B','T','Qa','Qi','Sx','Sp','Oc','No','Dc'];
-  const e = Math.floor(Math.log10(n) / 3);
-  const v = n / Math.pow(10, e * 3);
-  return '$' + (v < 10 ? v.toFixed(2) : v < 100 ? v.toFixed(1) : Math.floor(v)) + (s[e-1] || '');
-}
-
-// ==================== INCOME ====================
-function calcTotalIncome() {
-  let total = 0;
-  const now = Date.now();
-  const mult = state.globalMult * (now < state.boostUntil ? state.boostMult : 1);
-  for (const b of businesses) {
-    if (b.level > 0) {
-      total += b.baseIncome * b.level * mult;
-    }
-  }
-  return total;
-}
-function getCost(b) {
-  return Math.floor(b.baseCost * Math.pow(b.growth, b.level));
-}
-function getPrestigeGems() {
-  return Math.floor(Math.pow(state.totalEarned / 1e6, 0.5));
-}
-
-// ==================== RENDER ====================
-function render() {
-  const perSec = calcTotalIncome();
-  document.getElementById('cashDisplay').textContent = fmt(state.cash);
-  document.getElementById('perSec').textContent = fmt(perSec) + '/sec' + (state.boostUntil > Date.now() ? ' 🔥' : '');
-  document.getElementById('gemsDisplay').textContent = '💎 ' + state.gems;
-
-  const container = document.getElementById('businessesPanel');
-  container.innerHTML = '';
-  for (const b of businesses) {
-    const cost = getCost(b);
-    const canAfford = state.cash >= cost;
-    const locked = state.cash < cost * 0.1 && b.level === 0 && b.id !== 'stand';
-    const div = document.createElement('div');
-    div.className = 'biz-card' + (locked ? ' locked' : '');
-    div.innerHTML = `
-      <div class="biz-icon">${b.icon}</div>
-      <div class="biz-info">
-        <div class="biz-name">${b.name}</div>
-        <div class="biz-level">Level ${b.level.toLocaleString()}</div>
-        <div class="biz-income">+${fmt(b.baseIncome * b.level * state.globalMult * (Date.now() < state.boostUntil ? state.boostMult : 1))}/sec</div>
-        <div class="progress-wrap"><div class="progress-bar"><div class="progress-fill" style="width:${Math.min(100, state.cash/cost*100)}%"></div></div></div>
-      </div>
-      <button class="upgrade-btn" ${canAfford ? '' : 'disabled'} onclick="upgrade('${b.id}')">${fmt(cost)}</button>
-    `;
-    container.appendChild(div);
-  }
-
-  const pg = getPrestigeGems();
-  document.getElementById('prestigeGems').textContent = pg;
-  document.getElementById('prestigeBtn').disabled = pg < 1;
-  document.getElementById('prestigeBtn').onclick = () => doPrestige(pg);
-}
-
-// ==================== ACTIONS ====================
-function upgrade(id) {
-  const b = businesses.find(x => x.id === id);
-  const cost = getCost(b);
-  if (state.cash < cost) return;
-  state.cash -= cost;
-  b.level++;
-  state.tapValue = 1 + Math.floor(businesses.reduce((s, x) => s + x.level, 0) / 10);
-  save();
-  render();
-}
-
-const tapBtn = document.getElementById('tapBtn');
-tapBtn.addEventListener('click', (e) => {
-  const val = state.tapValue * state.globalMult * (Date.now() < state.boostUntil ? state.boostMult : 1);
-  state.cash += val;
-  state.totalEarned += val;
-  save();
-  render();
-  // FX
-  const fx = document.createElement('div');
-  fx.className = 'tap-fx';
-  fx.textContent = '+' + fmt(val);
-  const rect = tapBtn.getBoundingClientRect();
-  fx.style.left = (rect.left + rect.width/2 + (Math.random()*40-20)) + 'px';
-  fx.style.top = (rect.top + (Math.random()*20-10)) + 'px';
-  document.body.appendChild(fx);
-  setTimeout(() => fx.remove(), 700);
-});
-
-// ==================== PRESTIGE ====================
-function doPrestige(gems) {
-  if (!confirm(`Reset ALL progress for ${gems} 💎 permanent gems?`)) return;
-  state.gems += gems;
-  state.prestigeCount++;
-  state.globalMult = 1 + state.gems * 0.05; // 5% per gem
-  state.cash = 0;
-  state.totalEarned = 0;
-  state.tapValue = 1;
-  state.boostUntil = 0;
-  for (const b of businesses) b.level = 0;
-  save();
-  render();
-}
-
-// ==================== AD REWARDS ====================
-function showAd(cb) {
-  // Placeholder: integrate with AdSense for Games, Poki SDK, or Unity WebGL ads
-  // For now, simulate 5s delay
-  const btn = event ? event.target : null;
-  if (btn) { btn.disabled = true; btn.textContent = 'Loading...'; }
-  setTimeout(() => {
-    if (btn) { btn.disabled = false; }
-    cb();
-  }, 1500);
-}
-
-document.getElementById('boost2x').addEventListener('click', () => {
-  showAd(() => {
-    state.boostMult = 2;
-    state.boostUntil = Date.now() + 30 * 60 * 1000; // 30 min
-    save(); render();
-    alert('🔥 2x Income active for 30 minutes!');
+function num(n){return Math.floor(n).toLocaleString();}
+function totalLevels(){return businesses.reduce((s,b)=>s+b.level,0)}
+function activeMult(){return (1 + state.gems*0.05 + state.rep*0.01) * (Date.now()<state.boostUntil ? state.boostMult : 1) * (state.adFree?2:1)}
+function tapValue(){return (1 + Math.floor(totalLevels()/4)) * activeMult()}
+function incomePerSec(){return businesses.reduce((sum,b)=>sum + (b.level*b.baseIncome*activeMult()),0)}
+function cost(b){return Math.floor(b.baseCost*Math.pow(b.growth,b.level))}
+function prestigeGems(){return Math.floor(Math.pow(state.totalEarned/750000,0.52));}
+function addCash(amount){state.cash += amount; state.totalEarned += amount; state.lifetimeEarned += amount;}
+function statValue(stat){ if(stat==='levels') return totalLevels(); return state[stat]||0; }
+function currentMission(){return missions[Math.min(state.missionIndex, missions.length-1)];}
+function toast(msg){const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toast.timer); toast.timer=setTimeout(()=>t.classList.remove('show'),1600)}
+function fx(text, cls, x, y){const el=document.createElement('div'); el.className='fx '+cls; el.textContent=text; el.style.left=x+'px'; el.style.top=y+'px'; document.body.appendChild(el); setTimeout(()=>el.remove(),900)}
+function showBubble(msg){const q=document.getElementById('queue'); let b=q.querySelector('.bubble'); if(!b){b=document.createElement('div'); b.className='bubble'; q.appendChild(b);} b.textContent=msg; clearTimeout(showBubble.t); showBubble.t=setTimeout(()=>b.remove(),1400)}
+function renderQueue(){const q=document.getElementById('queue'); const bubble=q.querySelector('.bubble'); q.innerHTML=''; for(let i=0;i<4;i++){const c=document.createElement('div'); c.className='customer'; c.textContent=customers[(state.served+i)%customers.length]; q.appendChild(c);} if(bubble) q.appendChild(bubble);}
+function renderBusinesses(){
+  const wrap=document.getElementById('businessesPanel'); wrap.innerHTML='<div class="section-title">Upgrade your town</div>';
+  businesses.forEach((b)=>{
+    const c=cost(b), can=state.cash>=c, locked=b.level===0 && state.cash<c*.25 && b.id!=='stand';
+    const div=document.createElement('div'); div.className='biz-card '+(can?'can ':'')+(locked?'locked':'');
+    const cycleWidth = b.level>0 ? ((performance.now()/10/b.duration)%100) : 0;
+    div.innerHTML=`<div class="biz-icon">${b.icon}</div><div><div class="biz-name">${b.name}<span class="level-badge">Lv ${num(b.level)}</span></div><div class="biz-meta">${b.flavor}</div><div class="biz-income">${fmt(b.level*b.baseIncome*activeMult())}/sec</div><div class="cycle"><div class="cycle-fill" style="width:${cycleWidth}%"></div></div></div><button class="buy" ${can?'':'disabled'} onclick="buyBusiness('${b.id}')">${fmt(c)}</button>`;
+    wrap.appendChild(div);
   });
-});
-
-document.getElementById('boostTime').addEventListener('click', () => {
-  showAd(() => {
-    const income = calcTotalIncome();
-    const skip = income * 4 * 3600;
-    state.cash += skip;
-    state.totalEarned += skip;
-    save(); render();
-    alert('🚀 You skipped 4 hours! Earned ' + fmt(skip));
-  });
-});
-
-document.getElementById('watchAdBtn').addEventListener('click', () => {
-  showAd(() => {
-    const earned = parseFloat(document.getElementById('offlineCash').dataset.raw || 0);
-    state.cash += earned; // double = already added once, add again
-    state.totalEarned += earned;
-    document.getElementById('offlinePopup').classList.remove('show');
-    save(); render();
-  });
-});
-
-document.getElementById('claimBtn').addEventListener('click', () => {
-  document.getElementById('offlinePopup').classList.remove('show');
-  save(); render();
-});
-
-// ==================== IAP STUBS ====================
-function iapNoAds() {
-  // Integrate with Stripe/Paddle for web, or Apple/Google IAP for mobile
-  alert('This would trigger $4.99 payment. Integrate your payment provider here.');
-  state.adFree = true;
-  state.globalMult *= 2;
-  save(); render();
 }
-function iapGems() {
-  alert('This would trigger $2.99 payment for 500 gems.');
-  state.gems += 500;
-  state.globalMult = 1 + state.gems * 0.05;
-  save(); render();
+function renderMission(){
+  const m=currentMission(), v=statValue(m.stat), pct=Math.min(100,v/m.target*100); const done=v>=m.target;
+  document.getElementById('missionTitle').textContent='🎯 '+m.title;
+  let rew=[]; if(m.reward.cash) rew.push(fmt(m.reward.cash)); if(m.reward.rep) rew.push('⭐ '+m.reward.rep); if(m.reward.gems) rew.push('💎 '+m.reward.gems);
+  document.getElementById('missionSub').textContent=`${m.sub} — ${num(Math.min(v,m.target))}/${num(m.target)} | Reward: ${rew.join(' + ')}`;
+  document.getElementById('missionFill').style.width=pct+'%';
+  document.getElementById('claimMission').disabled=!done;
 }
-function iapStarter() {
-  alert('This would trigger $9.99 payment for Starter Pack.');
-  state.adFree = true;
-  state.gems += 1000;
-  state.globalMult = 1 + state.gems * 0.05;
-  save(); render();
+function renderStats(){
+  document.getElementById('statsGrid').innerHTML=`
+  <div class="stat"><div class="stat-label">Customers Served</div><div class="stat-val">${num(state.served)}</div></div>
+  <div class="stat"><div class="stat-label">Business Levels</div><div class="stat-val">${num(totalLevels())}</div></div>
+  <div class="stat"><div class="stat-label">Lifetime Earned</div><div class="stat-val">${fmt(state.lifetimeEarned)}</div></div>
+  <div class="stat"><div class="stat-label">Multiplier</div><div class="stat-val">${activeMult().toFixed(2)}x</div></div>
+  <div class="stat"><div class="stat-label">Prestiges</div><div class="stat-val">${num(state.prestigeCount)}</div></div>
+  <div class="stat"><div class="stat-label">Manual Taps</div><div class="stat-val">${num(state.taps)}</div></div>`;
 }
-
-// ==================== TABS ====================
-document.querySelectorAll('.tab').forEach(tab => {
-  tab.addEventListener('click', () => {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-    tab.classList.add('active');
-    document.getElementById(tab.dataset.panel + 'Panel').classList.add('active');
-  });
-});
-
-// ==================== GAME LOOP ====================
-let lastTick = Date.now();
-function tick() {
-  const now = Date.now();
-  const dt = (now - lastTick) / 1000;
-  lastTick = now;
-  const income = calcTotalIncome();
-  state.cash += income * dt;
-  state.totalEarned += income * dt;
-  render();
-  requestAnimationFrame(tick);
+function render(){
+  document.getElementById('cashDisplay').textContent=fmt(state.cash);
+  document.getElementById('perSec').textContent=fmt(incomePerSec())+'/sec';
+  document.getElementById('gemsDisplay').textContent='💎 '+num(state.gems);
+  document.getElementById('repDisplay').textContent='⭐ '+num(state.rep);
+  const boostLeft=Math.max(0,state.boostUntil-Date.now()); document.getElementById('boostPill').style.display=boostLeft>0?'inline-flex':'none';
+  if(boostLeft>0) document.getElementById('boostPill').textContent='🔥 '+Math.ceil(boostLeft/60000)+'m';
+  renderQueue(); renderMission(); renderBusinesses(); renderStats();
+  const pg=prestigeGems(); document.getElementById('prestigeGems').textContent=num(pg); document.getElementById('prestigeBtn').disabled=pg<1; document.getElementById('prestigeFill').style.width=Math.min(100,(state.totalEarned/750000)*100)+'%';
 }
-
-// ==================== INIT ====================
-processOffline();
-render();
-tick();
-setInterval(save, 5000);
+window.buyBusiness=function(id){ const b=businesses.find(x=>x.id===id); const c=cost(b); if(!b||state.cash<c) return; state.cash-=c; b.level++; state.rep += (b.level%10===0)?2:0; save(); render(); toast(`${b.icon} ${b.name} upgraded!`); showBubble('Nice upgrade!'); }
+document.getElementById('serveBtn').addEventListener('click',(e)=>{ const val=tapValue(); addCash(val); state.taps++; state.served++; if(state.served%10===0) state.rep++; save(); const r=e.currentTarget.getBoundingClientRect(); fx('+'+fmt(val),'coin-fx',r.left+r.width/2-24,r.top-8); fx('+1⭐','rep-fx',r.left+r.width/2+18,r.top+10); showBubble(['Fresh!','So good!','More please!','Best in town!'][state.served%4]); render(); });
+document.getElementById('claimMission').addEventListener('click',()=>{const m=currentMission(); if(statValue(m.stat)<m.target) return; if(m.reward.cash) addCash(m.reward.cash); if(m.reward.rep) state.rep+=m.reward.rep; if(m.reward.gems) state.gems+=m.reward.gems; if(state.missionIndex<missions.length-1) state.missionIndex++; save(); render(); toast('Mission reward claimed!');});
+function showAd(cb){ const old=document.activeElement; if(old&&old.tagName==='BUTTON'){old.disabled=true; const txt=old.textContent; old.textContent='Ad loading...'; setTimeout(()=>{old.disabled=false; old.textContent=txt; cb();},1100);} else setTimeout(cb,900); }
+document.getElementById('boost2x').addEventListener('click',()=>showAd(()=>{state.boostMult=2; state.boostUntil=Date.now()+30*60*1000; save(); render(); toast('🔥 2x income active!')}));
+document.getElementById('boostTime').addEventListener('click',()=>showAd(()=>{const v=incomePerSec()*4*3600; addCash(v); save(); render(); toast('🚀 Collected '+fmt(v));}));
+document.getElementById('prestigeBtn').addEventListener('click',()=>{const pg=prestigeGems(); if(pg<1) return; if(!confirm(`Prestige for ${pg} gems? This resets cash and business levels, but gems are permanent.`)) return; state.gems+=pg; state.cash=0; state.totalEarned=0; state.prestigeCount++; businesses.forEach(b=>b.level=0); save(); render(); toast('🏆 Prestiged for '+pg+' gems!');});
+window.iapNoAds=function(){state.adFree=true; save(); render(); toast('Demo purchase: No Ads + 2x active');}
+window.iapGems=function(){state.gems+=500; save(); render(); toast('Demo purchase: +500 gems');}
+window.iapStarter=function(){state.adFree=true; state.gems+=1000; addCash(50000); save(); render(); toast('Demo purchase: Starter Pack');}
+document.querySelectorAll('.tab').forEach(tab=>tab.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active')); tab.classList.add('active'); document.getElementById(tab.dataset.panel+'Panel').classList.add('active'); render();}));
+function processOffline(){ const now=Date.now(); const away=(now-(state.lastSave||now))/1000; if(away<45) return; const earned=incomePerSec()*Math.min(away,4*3600)*0.55; if(earned>5){state.pendingOffline=earned; addCash(earned); document.getElementById('offlineCash').textContent=fmt(earned); document.getElementById('offlineModal').classList.add('show');}}
+document.getElementById('claimOffline').addEventListener('click',()=>{document.getElementById('offlineModal').classList.remove('show'); save(); render();});
+document.getElementById('doubleOffline').addEventListener('click',()=>showAd(()=>{addCash(state.pendingOffline||0); document.getElementById('offlineModal').classList.remove('show'); save(); render(); toast('Offline reward doubled!');}));
+let last=Date.now(); function loop(){ const now=Date.now(), dt=(now-last)/1000; last=now; const inc=incomePerSec()*dt; if(inc>0) addCash(inc); render(); requestAnimationFrame(loop); }
+processOffline(); render(); if(!state.seenTutorial){toast('Serve customers, buy upgrades, prestige for gems.'); state.seenTutorial=true; save();} setInterval(save,5000); requestAnimationFrame(loop);
 </script>
 </body>
 </html>
